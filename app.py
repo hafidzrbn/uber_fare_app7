@@ -170,9 +170,3 @@ with st.form("fare_form"):
                 st.error(f"❌ Error during prediction: {e}")
         else:
             st.error("⚠️ Please select both pickup and drop-off points on the map.")
-
-
-
-
-
-
