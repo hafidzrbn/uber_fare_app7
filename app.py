@@ -90,8 +90,16 @@ if 'zoom' not in st.session_state:
 # ============================================================
 # 4️⃣ Interactive Map
 # ============================================================
+# Mendapatkan nilai center dan zoom dari session state
+center_coords = st.session_state.center
+zoom_level = st.session_state.zoom
+
+# Menyesuaikan format center jika diperlukan
+if isinstance(center_coords, dict):
+    center_coords = [center_coords['lat'], center_coords['lng']]
+
 # Menggunakan nilai dari session state untuk inisialisasi peta
-m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom)
+m = folium.Map(location=center_coords, zoom_start=zoom_level)
 
 if st.session_state.pickup:
     folium.Marker(
