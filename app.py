@@ -85,7 +85,7 @@ if 'dropoff' not in st.session_state:
 # ============================================================
 # 4️⃣ Interactive Map
 # ============================================================
-m = folium.Map(location=[40.75, -73.98], zoom_start=11)
+m = folium.Map(location=[40.75, -73.98], zoom_start=10)
 
 if st.session_state.pickup:
     folium.Marker(
@@ -170,6 +170,7 @@ with st.form("fare_form"):
                 st.error(f"❌ Error during prediction: {e}")
         else:
             st.error("⚠️ Please select both pickup and drop-off points on the map.")
+
 
 
 
