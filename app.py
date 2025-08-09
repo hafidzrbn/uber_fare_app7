@@ -85,7 +85,7 @@ if 'dropoff' not in st.session_state:
 # ============================================================
 # 4️⃣ Interactive Map
 # ============================================================
-m = folium.Map(location=[40.7128, -74.0060], zoom_start=10)
+m = folium.Map(location=[40.7, -74.0], zoom_start=11)
 
 if st.session_state.pickup:
     folium.Marker(
@@ -124,7 +124,7 @@ if not st.session_state.pickup:
 elif st.session_state.pickup and not st.session_state.dropoff:
     st.info("👉 Pickup point selected. Please **click again on the map** to choose your drop-off point.")
 else:
-    st.success("✅ Pickup and drop-off points have been selected. Please fill in other details to get your fare estimate.")
+    st.success("✅ Pickup and drop-off points have been selected. Please fill in other details to predict the fare.")
     st.markdown("🔄 **Click on the map again** to choose new pickup and drop-off points.")
 
 
@@ -132,7 +132,7 @@ else:
 # 5️⃣ Other Form Inputs & Prediction
 # ============================================================
 with st.form("fare_form"):
-    st.subheader("📝 Trip Details")
+    st.subheader("📝 More Trip Details")
     
     col1, col2 = st.columns(2)
     with col1:
