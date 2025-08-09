@@ -4,3 +4,5 @@ xgboost
 pandas
 numpy
 joblib
+folium
+streamlit-folium
