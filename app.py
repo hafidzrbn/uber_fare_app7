@@ -12,7 +12,7 @@ import folium
 from streamlit_folium import st_folium
 
 # ============================================================
-# 1️⃣ Definisi Fungsi Kustom (Sama seperti sebelumnya)
+# 1️⃣ Custom Functions Definition
 # ============================================================
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371  # Earth radius in kilometers
@@ -49,13 +49,13 @@ def create_features(df):
     return df_copy
 
 # ============================================================
-# 2️⃣ Load Best Model (Sama seperti sebelumnya)
+# 2️⃣ Load Best Model
 # ============================================================
 @st.cache_resource
 def load_model():
     model_path = "random_forest_pipeline.pkl"
     if not os.path.exists(model_path):
-        st.error(f"❌ File model '{model_path}' tidak ditemukan.")
+        st.error(f"❌ Model file '{model_path}' not found.")
         st.stop()
     return joblib.load(model_path)
 
@@ -77,14 +77,13 @@ st.set_page_config(
 st.title("🚖 Uber Fare Prediction App")
 st.markdown("Select your pickup and drop-off points on the map to predict your Uber fare.")
 
-# Inisialisasi state untuk menyimpan koordinat
 if 'pickup' not in st.session_state:
     st.session_state.pickup = None
 if 'dropoff' not in st.session_state:
     st.session_state.dropoff = None
 
 # ============================================================
-# 4️⃣ Peta Interaktif
+# 4️⃣ Interactive Map
 # ============================================================
 m = folium.Map(location=[40.7, -74.0], zoom_start=11)
 
@@ -103,34 +102,38 @@ if st.session_state.dropoff:
 
 map_data = st_folium(m, height=400, width=1000, returned_objects=["last_clicked"])
 
-# Logic untuk menyimpan koordinat klik
+# Logic to store clicked coordinates and display messages
 if map_data and map_data.get("last_clicked"):
     coords = map_data["last_clicked"]
     new_coords = (coords['lat'], coords['lng'])
 
     if not st.session_state.pickup:
         st.session_state.pickup = new_coords
-        st.warning("Titik penjemputan terpilih. Silakan pilih titik pengantaran.")
-        # Mengganti st.experimental_rerun() dengan st.rerun()
         st.rerun()
     elif not st.session_state.dropoff:
         st.session_state.dropoff = new_coords
-        st.success("Titik pengantaran terpilih. Anda dapat melanjutkan ke prediksi.")
-        # Mengganti st.experimental_rerun() dengan st.rerun()
         st.rerun()
     else:
         st.session_state.pickup = None
         st.session_state.dropoff = None
-        # Mengganti st.experimental_rerun() dengan st.rerun()
         st.rerun()
 
+# Display messages based on state
+if not st.session_state.pickup:
+    st.info("👋 Please **click on the map** to select your pickup point.")
+elif st.session_state.pickup and not st.session_state.dropoff:
+    st.info("👉 Pickup point selected. Please **click again on the map** to choose your drop-off point.")
+else:
+    st.success("✅ Pickup and drop-off points have been selected. Please fill in other details to predict the fare.")
+    st.markdown("🔄 **Click on the map again** to choose new pickup and drop-off points.")
+
+
 # ============================================================
-# 5️⃣ Input Form Lainnya & Prediksi
+# 5️⃣ Other Form Inputs & Prediction
 # ============================================================
 with st.form("fare_form"):
     st.subheader("📝 More Trip Details")
-
-    # Menampilkan koordinat yang dipilih
+    
     col1, col2 = st.columns(2)
     with col1:
         st.info(f"**Pickup Point:** {st.session_state.pickup}")
@@ -146,10 +149,8 @@ with st.form("fare_form"):
     if submitted:
         if st.session_state.pickup and st.session_state.dropoff:
             try:
-                # Menggabungkan date dan time menjadi satu objek datetime
                 pickup_datetime_full = datetime.combine(pickup_date, pickup_time)
                 
-                # Buat DataFrame dari input mentah
                 input_data = pd.DataFrame([{
                     'key': 'dummy_key',
                     'pickup_longitude': st.session_state.pickup[1],
@@ -168,5 +169,4 @@ with st.form("fare_form"):
             except Exception as e:
                 st.error(f"❌ Error during prediction: {e}")
         else:
-            st.error("⚠️ Mohon pilih titik penjemputan dan pengantaran pada peta.")
-
+            st.error("⚠️ Please select both pickup and drop-off points on the map.")
