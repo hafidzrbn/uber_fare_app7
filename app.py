@@ -124,7 +124,7 @@ if not st.session_state.pickup:
 elif st.session_state.pickup and not st.session_state.dropoff:
     st.info("👉 Pickup point selected. Please **click again on the map** to choose your drop-off point.")
 else:
-    st.success("✅ Pickup and drop-off points have been selected. Please fill in other details to predict the fare.")
+    st.success("✅ Pickup and drop-off points have been selected. Please fill in other details to get your fare estimate.")
     st.markdown("🔄 **Click on the map again** to choose new pickup and drop-off points.")
 
 
@@ -132,7 +132,7 @@ else:
 # 5️⃣ Other Form Inputs & Prediction
 # ============================================================
 with st.form("fare_form"):
-    st.subheader("📝 More Trip Details")
+    st.subheader("📝 Trip Details")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -170,3 +170,4 @@ with st.form("fare_form"):
                 st.error(f"❌ Error during prediction: {e}")
         else:
             st.error("⚠️ Please select both pickup and drop-off points on the map.")
+
