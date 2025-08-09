@@ -8,9 +8,11 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import os
+import folium
+from streamlit_folium import st_folium
 
 # ============================================================
-# 1️⃣ Definisi Fungsi Kustom
+# 1️⃣ Definisi Fungsi Kustom (Sama seperti sebelumnya)
 # ============================================================
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371  # Earth radius in kilometers
@@ -47,7 +49,7 @@ def create_features(df):
     return df_copy
 
 # ============================================================
-# 2️⃣ Load Best Model
+# 2️⃣ Load Best Model (Sama seperti sebelumnya)
 # ============================================================
 @st.cache_resource
 def load_model():
@@ -64,61 +66,104 @@ except Exception as e:
     st.stop()
 
 # ============================================================
-# 3️⃣ App Configuration
+# 3️⃣ App Configuration & State Management
 # ============================================================
 st.set_page_config(
     page_title="Uber Fare Prediction",
     page_icon="🚖",
-    layout="centered"
+    layout="wide"
 )
 
 st.title("🚖 Uber Fare Prediction App")
-st.markdown("Masukkan detail perjalanan Anda untuk memprediksi tarif Uber")
+st.markdown("Pilih titik penjemputan dan pengantaran pada peta untuk memprediksi tarif Uber.")
+
+# Inisialisasi state untuk menyimpan koordinat
+if 'pickup' not in st.session_state:
+    st.session_state.pickup = None
+if 'dropoff' not in st.session_state:
+    st.session_state.dropoff = None
 
 # ============================================================
-# 4️⃣ Input Form
+# 4️⃣ Peta Interaktif
+# ============================================================
+m = folium.Map(location=[40.7, -74.0], zoom_start=11)
+
+if st.session_state.pickup:
+    folium.Marker(
+        st.session_state.pickup,
+        popup="Pickup Location",
+        icon=folium.Icon(color="green", icon="fa-car", prefix='fa')
+    ).add_to(m)
+if st.session_state.dropoff:
+    folium.Marker(
+        st.session_state.dropoff,
+        popup="Dropoff Location",
+        icon=folium.Icon(color="red", icon="fa-flag-checkered", prefix='fa')
+    ).add_to(m)
+
+map_data = st_folium(m, height=400, width=1000, returned_objects=["last_clicked"])
+
+# Logic untuk menyimpan koordinat klik
+if map_data and map_data.get("last_clicked"):
+    coords = map_data["last_clicked"]
+    new_coords = (coords['lat'], coords['lng'])
+
+    if not st.session_state.pickup:
+        st.session_state.pickup = new_coords
+        st.warning("Titik penjemputan terpilih. Silakan pilih titik pengantaran.")
+        st.experimental_rerun()
+    elif not st.session_state.dropoff:
+        st.session_state.dropoff = new_coords
+        st.success("Titik pengantaran terpilih. Anda dapat melanjutkan ke prediksi.")
+        st.experimental_rerun()
+    else:
+        st.session_state.pickup = None
+        st.session_state.dropoff = None
+        st.experimental_rerun()
+
+
+# ============================================================
+# 5️⃣ Input Form Lainnya & Prediksi
 # ============================================================
 with st.form("fare_form"):
-    st.subheader("📝 Trip Details Input")
-    
-    # Menggunakan datetime_input untuk input yang lebih intuitif
-    pickup_date = st.date_input("Pickup Date", value=datetime.now())
-    pickup_time = st.time_input("Pickup Time", value=datetime.now())
+    st.subheader("📝 Input Detail Lain")
 
+    # Menampilkan koordinat yang dipilih
     col1, col2 = st.columns(2)
     with col1:
-        pickup_latitude = st.number_input("Pickup Latitude", value=40.738354, format="%.6f")
-        pickup_longitude = st.number_input("Pickup Longitude", value=-73.999817, format="%.6f")
-    
+        st.info(f"**Titik Jemput:** {st.session_state.pickup}")
     with col2:
-        dropoff_latitude = st.number_input("Dropoff Latitude", value=40.723217, format="%.6f")
-        dropoff_longitude = st.number_input("Dropoff Longitude", value=-73.999512, format="%.6f")
-
+        st.info(f"**Titik Antar:** {st.session_state.dropoff}")
+    
+    pickup_date = st.date_input("Pickup Date", value=datetime.now())
+    pickup_time = st.time_input("Pickup Time", value=datetime.now())
     passenger_count = st.number_input("Passenger Count", min_value=1, max_value=6, value=1)
 
     submitted = st.form_submit_button("🔮 Predict Fare")
 
     if submitted:
-        try:
-            # Menggabungkan date dan time menjadi satu objek datetime
-            pickup_datetime_full = datetime.combine(pickup_date, pickup_time)
+        if st.session_state.pickup and st.session_state.dropoff:
+            try:
+                # Menggabungkan date dan time menjadi satu objek datetime
+                pickup_datetime_full = datetime.combine(pickup_date, pickup_time)
+                
+                # Buat DataFrame dari input mentah
+                input_data = pd.DataFrame([{
+                    'key': 'dummy_key',
+                    'pickup_longitude': st.session_state.pickup[1],
+                    'pickup_latitude': st.session_state.pickup[0],
+                    'dropoff_longitude': st.session_state.dropoff[1],
+                    'dropoff_latitude': st.session_state.dropoff[0],
+                    'passenger_count': passenger_count,
+                    'pickup_datetime': pickup_datetime_full
+                }])
+                
+                prediction = model.predict(input_data)
+                
+                st.subheader("✅ Prediction Successful!")
+                st.success(f"Predicted Uber fare: ${prediction[0]:,.2f}")
             
-            # Buat DataFrame dari input mentah pengguna
-            input_data = pd.DataFrame([{
-                'key': 'dummy_key',
-                'pickup_longitude': pickup_longitude,
-                'pickup_latitude': pickup_latitude,
-                'dropoff_longitude': dropoff_longitude,
-                'dropoff_latitude': dropoff_latitude,
-                'passenger_count': passenger_count,
-                'pickup_datetime': pickup_datetime_full
-            }])
-            
-            # Prediksi menggunakan pipeline
-            prediction = model.predict(input_data)
-            
-            st.subheader("✅ Prediction Successful!")
-            st.success(f"Predicted Uber fare: ${prediction[0]:,.2f}")
-
-        except Exception as e:
-            st.error(f"❌ Error during prediction: {e}")
+            except Exception as e:
+                st.error(f"❌ Error during prediction: {e}")
+        else:
+            st.error("⚠️ Mohon pilih titik penjemputan dan pengantaran pada peta.")
