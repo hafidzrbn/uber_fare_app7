@@ -111,16 +111,18 @@ if map_data and map_data.get("last_clicked"):
     if not st.session_state.pickup:
         st.session_state.pickup = new_coords
         st.warning("Titik penjemputan terpilih. Silakan pilih titik pengantaran.")
-        st.experimental_rerun()
+        # Mengganti st.experimental_rerun() dengan st.rerun()
+        st.rerun()
     elif not st.session_state.dropoff:
         st.session_state.dropoff = new_coords
         st.success("Titik pengantaran terpilih. Anda dapat melanjutkan ke prediksi.")
-        st.experimental_rerun()
+        # Mengganti st.experimental_rerun() dengan st.rerun()
+        st.rerun()
     else:
         st.session_state.pickup = None
         st.session_state.dropoff = None
-        st.experimental_rerun()
-
+        # Mengganti st.experimental_rerun() dengan st.rerun()
+        st.rerun()
 
 # ============================================================
 # 5️⃣ Input Form Lainnya & Prediksi
