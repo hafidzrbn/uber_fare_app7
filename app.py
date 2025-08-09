@@ -81,25 +81,11 @@ if 'pickup' not in st.session_state:
     st.session_state.pickup = None
 if 'dropoff' not in st.session_state:
     st.session_state.dropoff = None
-# Inisialisasi state untuk center dan zoom peta
-if 'center' not in st.session_state:
-    st.session_state.center = [40.75, -73.98]
-if 'zoom' not in st.session_state:
-    st.session_state.zoom = 11
 
 # ============================================================
 # 4️⃣ Interactive Map
 # ============================================================
-# Mendapatkan nilai center dan zoom dari session state
-center_coords = st.session_state.center
-zoom_level = st.session_state.zoom
-
-# Menyesuaikan format center jika diperlukan
-if isinstance(center_coords, dict):
-    center_coords = [center_coords['lat'], center_coords['lng']]
-
-# Menggunakan nilai dari session state untuk inisialisasi peta
-m = folium.Map(location=center_coords, zoom_start=zoom_level)
+m = folium.Map(location=[40.75, -73.98], zoom_start=10)
 
 if st.session_state.pickup:
     folium.Marker(
@@ -114,8 +100,7 @@ if st.session_state.dropoff:
         icon=folium.Icon(color="red", icon="fa-flag-checkered", prefix='fa')
     ).add_to(m)
 
-# st_folium mengembalikan objek dengan informasi peta saat ini
-map_data = st_folium(m, height=400, width=1000, returned_objects=["last_clicked", "center", "zoom"])
+map_data = st_folium(m, height=400, width=1000, returned_objects=["last_clicked"])
 
 # Logic to store clicked coordinates and display messages
 if map_data and map_data.get("last_clicked"):
@@ -132,13 +117,6 @@ if map_data and map_data.get("last_clicked"):
         st.session_state.pickup = None
         st.session_state.dropoff = None
         st.rerun()
-
-# Simpan center dan zoom level peta saat ini ke dalam session state
-# Ini akan memastikan peta tidak reset ke nilai default saat skrip rerun
-if map_data:
-    st.session_state.center = map_data.get("center", st.session_state.center)
-    st.session_state.zoom = map_data.get("zoom", st.session_state.zoom)
-
 
 # Display messages based on state
 if not st.session_state.pickup:
