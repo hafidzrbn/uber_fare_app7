@@ -121,23 +121,19 @@ map_data = st_folium(m, height=400, width=1000, returned_objects=["last_clicked"
 if map_data and map_data.get("last_clicked"):
     coords = map_data["last_clicked"]
     new_coords = (coords['lat'], coords['lng'])
-
     if not st.session_state.pickup:
         st.session_state.pickup = new_coords
-        st.rerun()
     elif not st.session_state.dropoff:
         st.session_state.dropoff = new_coords
-        st.rerun()
     else:
         st.session_state.pickup = None
         st.session_state.dropoff = None
-        st.rerun()
 
 # Simpan center dan zoom level peta saat ini ke dalam session state
 # Ini akan memastikan peta tidak reset ke nilai default saat skrip rerun
-if map_data:
-    st.session_state.center = map_data.get("center", st.session_state.center)
-    st.session_state.zoom = map_data.get("zoom", st.session_state.zoom)
+if map_data and map_data.get("center") and map_data.get("zoom"):
+    st.session_state.center = [map_data['center']['lat'], map_data['center']['lng']]
+    st.session_state.zoom = map_data['zoom']
 
 
 # Display messages based on state
