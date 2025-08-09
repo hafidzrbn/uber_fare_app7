@@ -75,7 +75,7 @@ st.set_page_config(
 )
 
 st.title("🚖 Uber Fare Prediction App")
-st.markdown("Pilih titik penjemputan dan pengantaran pada peta untuk memprediksi tarif Uber.")
+st.markdown("Select your pickup and drop-off points on the map to predict your Uber fare.")
 
 # Inisialisasi state untuk menyimpan koordinat
 if 'pickup' not in st.session_state:
@@ -128,14 +128,14 @@ if map_data and map_data.get("last_clicked"):
 # 5️⃣ Input Form Lainnya & Prediksi
 # ============================================================
 with st.form("fare_form"):
-    st.subheader("📝 Input Detail Lain")
+    st.subheader("📝 More Trip Details")
 
     # Menampilkan koordinat yang dipilih
     col1, col2 = st.columns(2)
     with col1:
-        st.info(f"**Titik Jemput:** {st.session_state.pickup}")
+        st.info(f"**Pickup Point:** {st.session_state.pickup}")
     with col2:
-        st.info(f"**Titik Antar:** {st.session_state.dropoff}")
+        st.info(f"**Drop-off Point:** {st.session_state.dropoff}")
     
     pickup_date = st.date_input("Pickup Date", value=datetime.now())
     pickup_time = st.time_input("Pickup Time", value=datetime.now())
@@ -169,3 +169,4 @@ with st.form("fare_form"):
                 st.error(f"❌ Error during prediction: {e}")
         else:
             st.error("⚠️ Mohon pilih titik penjemputan dan pengantaran pada peta.")
+
